@@ -67,7 +67,7 @@ public class AgentService {
     private AgentResponse toResponse(Agent agent) {
         return AgentResponse.builder()
                 .id(agent.getId())
-                .externalId(agent.getExternalId())
+                .externalId(String.valueOf(agent.getExternalId()))
                 .name(agent.getName())
                 .role(agent.getRole())
                 .team(agent.getTeam())

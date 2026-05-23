@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Builder
 public class AgentResponse {
     private Long id;
-    private Long externalId;
+    private String externalId;
     private String name;
     private String role;
     private String team;

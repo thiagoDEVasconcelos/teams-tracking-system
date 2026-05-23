@@ -18,7 +18,7 @@ public class Agent {
     private Long id;
 
     @Column(name = "external_id", unique = true)
-    private Long externalId;
+    private String externalId;
 
     private String name;
     private String role;

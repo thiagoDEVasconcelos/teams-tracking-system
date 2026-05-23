@@ -93,4 +93,27 @@ public class GpsApiClient {
             return new ExternalCheckInResponse();
         }
     }
+
+    public List<ExternalGeofenceDto> fetchGeofences() {
+        try {
+            ExternalGeofenceResponse response = webClient.get()
+                    .uri("/api/v1/geofences/")
+                    .retrieve()
+                    .bodyToMono(ExternalGeofenceResponse.class)
+                    .timeout(Duration.ofSeconds(10))
+                    .onErrorResume(e -> {
+                        log.error("Erro ao buscar geofences: {}", e.getMessage());
+                        return Mono.just(new ExternalGeofenceResponse());
+                    })
+                    .block();
+
+            if (response == null || response.getData() == null) {
+                return Collections.emptyList();
+            }
+            return response.getData();
+        } catch (Exception e) {
+            log.error("Erro inesperado ao buscar geofences: {}", e.getMessage());
+            return Collections.emptyList();
+        }
+    }
 }

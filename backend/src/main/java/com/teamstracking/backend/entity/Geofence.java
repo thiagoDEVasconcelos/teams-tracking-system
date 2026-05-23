@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Setter
 public class Geofence {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

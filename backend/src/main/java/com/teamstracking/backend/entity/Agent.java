@@ -1,16 +1,14 @@
 package com.teamstracking.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Table(name = "agents")
 @Entity(name = "Agent")
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

@@ -1,9 +1,6 @@
 package com.teamstracking.backend.client;
 
-import com.teamstracking.backend.dto.external.ExternalAgentDto;
-import com.teamstracking.backend.dto.external.ExternalAgentResponse;
-import com.teamstracking.backend.dto.external.ExternalLocationDto;
-import com.teamstracking.backend.dto.external.ExternalLocationResponse;
+import com.teamstracking.backend.dto.external.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -70,6 +67,30 @@ public class GpsApiClient {
         } catch (Exception e) {
             log.error("Erro inesperado ao buscar localizações: {}", e.getMessage());
             return Collections.emptyList();
+        }
+    }
+
+    public ExternalCheckInResponse fetchCheckIns(String syncToken) {
+        try {
+            return webClient.get()
+                    .uri(uriBuilder -> {
+                        var builder = uriBuilder.path("/api/v1/check-ins/");
+                        if (syncToken != null) {
+                            builder = builder.queryParam("syncToken", syncToken);
+                        }
+                        return builder.build();
+                    })
+                    .retrieve()
+                    .bodyToMono(ExternalCheckInResponse.class)
+                    .timeout(Duration.ofSeconds(10))
+                    .onErrorResume(e -> {
+                        log.error("Erro ao buscar check-ins: {}", e.getMessage());
+                        return Mono.just(new ExternalCheckInResponse());
+                    })
+                    .block();
+        } catch (Exception e) {
+            log.error("Erro inesperado ao buscar check-ins: {}", e.getMessage());
+            return new ExternalCheckInResponse();
         }
     }
 }

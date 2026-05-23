@@ -2,6 +2,8 @@ package com.teamstracking.backend.client;
 
 import com.teamstracking.backend.dto.external.ExternalAgentDto;
 import com.teamstracking.backend.dto.external.ExternalAgentResponse;
+import com.teamstracking.backend.dto.external.ExternalLocationDto;
+import com.teamstracking.backend.dto.external.ExternalLocationResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -44,6 +46,29 @@ public class GpsApiClient {
             return response.getData();
         } catch (Exception e) {
             log.error("Erro inesperado ao buscar agentes: {}", e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    public List<ExternalLocationDto> fetchLocations() {
+        try {
+            ExternalLocationResponse response = webClient.get()
+                    .uri("/api/v1/locations/")
+                    .retrieve()
+                    .bodyToMono(ExternalLocationResponse.class)
+                    .timeout(Duration.ofSeconds(10))
+                    .onErrorResume(e -> {
+                        log.error("Erro ao buscar localizações: {}", e.getMessage());
+                        return Mono.just(new ExternalLocationResponse());
+                    })
+                    .block();
+
+            if (response == null || response.getData() == null) {
+                return Collections.emptyList();
+            }
+            return response.getData();
+        } catch (Exception e) {
+            log.error("Erro inesperado ao buscar localizações: {}", e.getMessage());
             return Collections.emptyList();
         }
     }

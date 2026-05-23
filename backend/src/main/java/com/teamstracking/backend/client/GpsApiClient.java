@@ -3,10 +3,14 @@ package com.teamstracking.backend.client;
 import com.teamstracking.backend.dto.external.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,45 +28,89 @@ public class GpsApiClient {
                 .build();
     }
 
-    public List<ExternalAgentDto> fetchAgents() {
-        try {
-            ExternalAgentResponse response = webClient.get()
-                    .uri("/api/v1/agents/")
-                    .retrieve()
-                    .bodyToMono(ExternalAgentResponse.class)
-                    .timeout(Duration.ofSeconds(10))
-                    .onErrorResume(e -> {
-                        log.error("Erro ao buscar agentes da API externa: {}", e.getMessage());
-                        return Mono.just(new ExternalAgentResponse());
-                    })
-                    .block();
+    private <T> Mono<T> withResilience(Mono<T> mono) {
+        return mono
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+                        .maxBackoff(Duration.ofSeconds(30))
+                        .filter(throwable -> {
+                            if (throwable instanceof WebClientResponseException ex) {
 
-            if (response == null || response.getData() == null) {
-                return Collections.emptyList();
+                                if (ex.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) {
+                                    log.warn("API externa retornou 503, aplicando backoff...");
+                                    return true;
+                                }
+
+                                if (ex.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                                    String retryAfter = ex.getHeaders().getFirst("Retry-After");
+                                    long waitSeconds = retryAfter != null ? Long.parseLong(retryAfter) : 10;
+                                    log.warn("API externa retornou 429, aguardando {}s...", waitSeconds);
+                                    Mono.delay(Duration.ofSeconds(waitSeconds)).block();
+                                    return true;
+                                }
+                            }
+                            return false;
+                        })
+                );
+    }
+
+    public List<ExternalAgentDto> fetchAgents() {
+        List<ExternalAgentDto> allAgents = new ArrayList<>();
+        int page = 1;
+        boolean hasMore = true;
+
+        while (hasMore) {
+            final int currentPage = page;
+            try {
+                ExternalAgentResponse response = withResilience(
+                        webClient.get()
+                                .uri(uriBuilder -> uriBuilder
+                                        .path("/api/v1/agents/")
+                                        .queryParam("page", currentPage)
+                                        .queryParam("limit", 50)
+                                        .build())
+                                .retrieve()
+                                .bodyToMono(ExternalAgentResponse.class)
+                                .timeout(Duration.ofSeconds(10))
+                )
+                        .onErrorResume(e -> {
+                            log.error("Erro ao buscar agentes página {}: {}", currentPage, e.getMessage());
+                            return Mono.just(new ExternalAgentResponse());
+                        })
+                        .block();
+
+                if (response == null || response.getData() == null || response.getData().isEmpty()) {
+                    hasMore = false;
+                } else {
+                    allAgents.addAll(response.getData());
+                    hasMore = response.getData().size() == 50;
+                    page++;
+                }
+            } catch (Exception e) {
+                log.error("Erro inesperado na paginação de agentes: {}", e.getMessage());
+                hasMore = false;
             }
-            return response.getData();
-        } catch (Exception e) {
-            log.error("Erro inesperado ao buscar agentes: {}", e.getMessage());
-            return Collections.emptyList();
         }
+
+        log.info("Total de agentes buscados: {}", allAgents.size());
+        return allAgents;
     }
 
     public List<ExternalLocationDto> fetchLocations() {
         try {
-            ExternalLocationResponse response = webClient.get()
-                    .uri("/api/v1/locations/")
-                    .retrieve()
-                    .bodyToMono(ExternalLocationResponse.class)
-                    .timeout(Duration.ofSeconds(10))
+            ExternalLocationResponse response = withResilience(
+                    webClient.get()
+                            .uri("/api/v1/locations/")
+                            .retrieve()
+                            .bodyToMono(ExternalLocationResponse.class)
+                            .timeout(Duration.ofSeconds(10))
+            )
                     .onErrorResume(e -> {
-                        log.error("Erro ao buscar localizações: {}", e.getMessage());
+                        log.error("Erro ao buscar localizações após retries: {}", e.getMessage());
                         return Mono.just(new ExternalLocationResponse());
                     })
                     .block();
 
-            if (response == null || response.getData() == null) {
-                return Collections.emptyList();
-            }
+            if (response == null || response.getData() == null) return Collections.emptyList();
             return response.getData();
         } catch (Exception e) {
             log.error("Erro inesperado ao buscar localizações: {}", e.getMessage());
@@ -72,19 +120,19 @@ public class GpsApiClient {
 
     public ExternalCheckInResponse fetchCheckIns(String syncToken) {
         try {
-            return webClient.get()
-                    .uri(uriBuilder -> {
-                        var builder = uriBuilder.path("/api/v1/check-ins/");
-                        if (syncToken != null) {
-                            builder = builder.queryParam("syncToken", syncToken);
-                        }
-                        return builder.build();
-                    })
-                    .retrieve()
-                    .bodyToMono(ExternalCheckInResponse.class)
-                    .timeout(Duration.ofSeconds(10))
+            return withResilience(
+                    webClient.get()
+                            .uri(uriBuilder -> {
+                                var builder = uriBuilder.path("/api/v1/check-ins/");
+                                if (syncToken != null) builder = builder.queryParam("syncToken", syncToken);
+                                return builder.build();
+                            })
+                            .retrieve()
+                            .bodyToMono(ExternalCheckInResponse.class)
+                            .timeout(Duration.ofSeconds(10))
+            )
                     .onErrorResume(e -> {
-                        log.error("Erro ao buscar check-ins: {}", e.getMessage());
+                        log.error("Erro ao buscar check-ins após retries: {}", e.getMessage());
                         return Mono.just(new ExternalCheckInResponse());
                     })
                     .block();
@@ -96,20 +144,20 @@ public class GpsApiClient {
 
     public List<ExternalGeofenceDto> fetchGeofences() {
         try {
-            ExternalGeofenceResponse response = webClient.get()
-                    .uri("/api/v1/geofences/")
-                    .retrieve()
-                    .bodyToMono(ExternalGeofenceResponse.class)
-                    .timeout(Duration.ofSeconds(10))
+            ExternalGeofenceResponse response = withResilience(
+                    webClient.get()
+                            .uri("/api/v1/geofences/")
+                            .retrieve()
+                            .bodyToMono(ExternalGeofenceResponse.class)
+                            .timeout(Duration.ofSeconds(10))
+            )
                     .onErrorResume(e -> {
-                        log.error("Erro ao buscar geofences: {}", e.getMessage());
+                        log.error("Erro ao buscar geofences após retries: {}", e.getMessage());
                         return Mono.just(new ExternalGeofenceResponse());
                     })
                     .block();
 
-            if (response == null || response.getData() == null) {
-                return Collections.emptyList();
-            }
+            if (response == null || response.getData() == null) return Collections.emptyList();
             return response.getData();
         } catch (Exception e) {
             log.error("Erro inesperado ao buscar geofences: {}", e.getMessage());

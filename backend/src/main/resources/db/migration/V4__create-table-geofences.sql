@@ -1,0 +1,12 @@
+CREATE TABLE geofences (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    external_id VARCHAR(100) UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    coordinates TEXT,
+    alert_on_enter BOOLEAN DEFAULT false,
+    alert_on_exit BOOLEAN DEFAULT false,
+    teams VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

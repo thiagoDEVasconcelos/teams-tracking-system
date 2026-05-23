@@ -1,0 +1,20 @@
+CREATE TABLE agents (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    external_id VARCHAR(100) UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    role VARCHAR(30),
+    team VARCHAR(50),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    active BOOLEAN DEFAULT true,
+    status VARCHAR(20) DEFAULT 'OFFLINE',
+    battery INT DEFAULT 0,
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
+    current_address VARCHAR(255),
+    accuracy DECIMAL(8, 2),
+    speed DECIMAL(8, 2),
+    last_seen TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

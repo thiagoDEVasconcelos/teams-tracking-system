@@ -1,0 +1,13 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+
+# Geral
+.DS_Store
+*.log
+.env

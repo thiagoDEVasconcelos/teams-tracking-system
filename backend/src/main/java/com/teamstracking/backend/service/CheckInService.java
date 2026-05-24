@@ -5,6 +5,7 @@ import com.teamstracking.backend.entity.Agent;
 import com.teamstracking.backend.entity.CheckIn;
 import com.teamstracking.backend.repository.AgentRepository;
 import com.teamstracking.backend.repository.CheckInRepository;
+import com.teamstracking.backend.util.HaversineUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,24 @@ public class CheckInService {
         Agent agent = agentRepository.findById(request.getAgentId())
                 .orElseThrow(() -> new EntityNotFoundException("Agente não encontrado: " + request.getAgentId()));
 
+        CheckIn lastCheckIn = checkInRepository
+                .findTopByAgentIdOrderByOccurredAtDesc(agent.getId())
+                .orElse(null);
+
+        Double distance = null;
+        if (lastCheckIn != null
+                && lastCheckIn.getLatitude() != null
+                && lastCheckIn.getLongitude() != null
+                && request.getLatitude() != null
+                && request.getLongitude() != null) {
+            distance = HaversineUtil.calculate(
+                    lastCheckIn.getLatitude(),
+                    lastCheckIn.getLongitude(),
+                    request.getLatitude(),
+                    request.getLongitude()
+            );
+        }
+
         return checkInRepository.save(CheckIn.builder()
                 .agent(agent)
                 .type("CHECKIN")
@@ -30,6 +49,7 @@ public class CheckInService {
                 .longitude(request.getLongitude())
                 .address(request.getAddress())
                 .notes(request.getNotes())
+                .distanceFromPrevious(distance)
                 .occurredAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .build());

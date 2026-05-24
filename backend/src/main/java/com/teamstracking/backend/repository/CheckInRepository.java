@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
     Optional<CheckIn> findByExternalEventId(String externalEventId);
     List<CheckIn> findByAgentIdOrderByOccurredAtDesc(Long agentId);
-    List<CheckIn> findByType(String type);
+    Optional<CheckIn> findTopByAgentIdOrderByOccurredAtDesc(Long agentId);
 }

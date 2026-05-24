@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { Agent } from "@/services/agents";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { RoutePoint } from "@/services/locations";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -14,6 +15,9 @@ L.Icon.Default.mergeOptions({
 
 interface Props {
   agents: Agent[];
+  selectedAgent: Agent | null;
+  onSelectAgent: (agent: Agent | null) => void;
+  routePoints: RoutePoint[];
 }
 
 export function AgentMap({ agents }: Props) {

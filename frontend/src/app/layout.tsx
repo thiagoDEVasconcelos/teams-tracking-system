@@ -3,7 +3,6 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import Link from "next/dist/client/link";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
 import { Providers } from "@/components/providers";
 
@@ -45,7 +44,6 @@ export default function RootLayout({
           </nav>
           <main className="p-6">{children}</main>
           <Toaster />
-          <ReactQueryDevtools initialIsOpen={false} />
         </Providers>
       </body>
     </html>

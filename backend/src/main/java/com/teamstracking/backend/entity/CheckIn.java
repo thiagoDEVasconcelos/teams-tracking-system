@@ -18,7 +18,7 @@ public class CheckIn {
     @Column(name = "external_event_id", unique = true)
     private String externalEventId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "agent_id", nullable = false)
     private Agent agent;
 

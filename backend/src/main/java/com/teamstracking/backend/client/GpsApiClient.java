@@ -4,10 +4,12 @@ import com.teamstracking.backend.dto.external.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 import reactor.util.retry.Retry;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -25,6 +27,10 @@ public class GpsApiClient {
         this.webClient = WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader("x-api-key", apiKey)
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create()
+                                .responseTimeout(Duration.ofSeconds(60))
+                ))
                 .build();
     }
 
@@ -70,7 +76,7 @@ public class GpsApiClient {
                                         .build())
                                 .retrieve()
                                 .bodyToMono(ExternalAgentResponse.class)
-                                .timeout(Duration.ofSeconds(10))
+                                .timeout(Duration.ofSeconds(60))
                 )
                         .onErrorResume(e -> {
                             log.error("Erro ao buscar agentes página {}: {}", currentPage, e.getMessage());
@@ -102,7 +108,7 @@ public class GpsApiClient {
                             .uri("/api/v1/locations/")
                             .retrieve()
                             .bodyToMono(ExternalLocationResponse.class)
-                            .timeout(Duration.ofSeconds(10))
+                            .timeout(Duration.ofSeconds(60))
             )
                     .onErrorResume(e -> {
                         log.error("Erro ao buscar localizações após retries: {}", e.getMessage());
@@ -129,7 +135,7 @@ public class GpsApiClient {
                             })
                             .retrieve()
                             .bodyToMono(ExternalCheckInResponse.class)
-                            .timeout(Duration.ofSeconds(10))
+                            .timeout(Duration.ofSeconds(60))
             )
                     .onErrorResume(e -> {
                         log.error("Erro ao buscar check-ins após retries: {}", e.getMessage());
@@ -149,7 +155,7 @@ public class GpsApiClient {
                             .uri("/api/v1/geofences/")
                             .retrieve()
                             .bodyToMono(ExternalGeofenceResponse.class)
-                            .timeout(Duration.ofSeconds(10))
+                            .timeout(Duration.ofSeconds(60))
             )
                     .onErrorResume(e -> {
                         log.error("Erro ao buscar geofences após retries: {}", e.getMessage());

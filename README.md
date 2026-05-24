@@ -1,0 +1,183 @@
+# Teams Tracking System
+
+Sistema de rastreamento de equipes externas em tempo real, desenvolvido como desafio técnico fullstack com Spring Boot e Next.js.
+
+---
+
+## Tecnologias Utilizadas
+
+### Backend
+- Java 17
+- Spring Boot 3.3.5
+- Spring Data JPA
+- Spring WebFlux (WebClient)
+- MySQL 8
+- Flyway (migrations)
+- Springdoc OpenAPI (Swagger)
+
+### Frontend
+- Next.js 16
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- TanStack Query (React Query)
+- React Hook Form + Zod
+- Leaflet / React Leaflet
+
+---
+
+## Funcionalidades Implementadas
+
+### Obrigatórias
+- CRUD completo de agentes de campo
+- Sincronização automática via 4 schedulers independentes
+- Rastreamento geográfico em tempo real
+- Histórico completo de rota do dia por agente
+- Registro de check-ins manuais e automáticos
+- Cálculo de distância entre check-ins com fórmula Haversine
+- Tratamento de idempotência via upsert por externalId
+- Painel de monitoramento de sincronização
+
+### Diferenciais
+- Mapa interativo com Leaflet
+- Geofencing visual (polígonos e círculos no mapa)
+- Swagger/OpenAPI em `/swagger-ui/index.html`
+- Tratamento de erros 429 (Rate Limiting) e 503 (Instabilidade) com retry e backoff exponencial com jitter
+
+---
+
+## Arquitetura
+
+teams-tracking-system/
+├── backend/        ← Spring Boot API REST
+├── frontend/       ← Next.js App Router
+├── docs/           ← Documentação adicional
+└── README.md
+
+### Fluxo de sincronização
+
+Schedulers (a cada X segundos)
+↓
+GpsApiClient (WebClient)
+↓
+API Externa (desafio-media.onrender.com)
+↓
+SyncService (upsert + regras de negócio)
+↓
+MySQL (persistência)
+↓
+Frontend (TanStack Query com refetchInterval)
+
+### Os 4 Schedulers
+
+| Scheduler | Intervalo | Responsabilidade |
+|---|---|---|
+| AgentSyncScheduler | 5 minutos | Sincroniza cadastro de agentes via upsert por externalId |
+| LocationSyncScheduler | 30 segundos | Atualiza posição atual e persiste histórico de localização |
+| CheckInSyncScheduler | 1 minuto | Sincronização incremental de eventos via syncToken |
+| GeofenceSyncScheduler | 10 minutos | Sincroniza cercas geográficas via upsert por externalId |
+
+---
+
+## Decisões Técnicas
+
+### WebClient em vez de RestTemplate
+O desafio exige WebClient. Utilizado WebClient com tratamento de erros 429 (rate limiting) lendo o header `Retry-After` e 503 (instabilidade simulada) com backoff exponencial e jitter de 50%, garantindo resiliência nas chamadas à API externa.
+
+### Flyway para migrations
+Todas as alterações no banco são versionadas via Flyway, garantindo rastreabilidade e reprodutibilidade do schema em qualquer ambiente.
+
+### syncToken incremental
+O `CheckInSyncScheduler` persiste o `syncToken` retornado pela API após cada sincronização bem-sucedida. Nas execuções seguintes, envia o token para buscar apenas eventos novos, evitando reprocessamento.
+
+### Idempotência
+- Agentes e geofences: upsert pelo `externalId`
+- Check-ins automáticos: verificação pelo `externalEventId` antes de salvar
+- Localizações: filtro de acurácia GPS — leituras acima de 50 metros são descartadas
+
+### Haversine
+Cálculo de distância em metros entre check-ins consecutivos do mesmo agente, implementado em `HaversineUtil` e aplicado tanto em check-ins manuais quanto automáticos.
+
+### Separação de responsabilidades
+- `GpsApiClient` — comunicação com API externa
+- `SyncService` — orquestração da sincronização
+- `Schedulers` — agendamento, delegam para SyncService
+- `Controllers` — exposição dos endpoints REST
+
+---
+
+## Pré-requisitos
+
+- Java 17+
+- Node.js 18+
+- MySQL 8+
+- Maven 3.8+
+
+---
+
+## Como Rodar
+
+### 1. Banco de dados
+
+```sql
+CREATE DATABASE teams_tracking;
+CREATE USER 'tracker'@'localhost' IDENTIFIED BY 'tracker123';
+GRANT ALL PRIVILEGES ON teams_tracking.* TO 'tracker'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+### 2. Backend
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+O Flyway criará as tabelas automaticamente na primeira execução.
+
+Backend disponível em: `http://localhost:8080`
+Swagger disponível em: `http://localhost:8080/swagger-ui/index.html`
+
+### 3. Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend disponível em: `http://localhost:3000`
+
+---
+
+## Endpoints principais
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| GET | /api/agents | Lista todos os agentes |
+| POST | /api/agents | Cria novo agente |
+| PUT | /api/agents/{id} | Atualiza agente |
+| DELETE | /api/agents/{id} | Remove agente |
+| GET | /api/check-ins | Lista check-ins |
+| POST | /api/check-ins | Registra check-in manual |
+| GET | /api/locations/agent/{id}/route | Rota do dia do agente |
+| GET | /api/geofences | Lista geofences |
+| POST | /api/sync/agents | Sincroniza agentes manualmente |
+| POST | /api/sync/locations | Sincroniza localizações manualmente |
+| POST | /api/sync/check-ins | Sincroniza check-ins manualmente |
+| POST | /api/sync/geofences | Sincroniza geofences manualmente |
+| GET | /api/sync/logs | Histórico de sincronizações |
+
+Documentação completa: `http://localhost:8080/swagger-ui/index.html`
+
+---
+
+## Telas do Sistema
+
+| Tela | Rota | Descrição |
+|---|---|---|
+| Dashboard | / | Resumo geral com cards de status |
+| Agentes | /agents | CRUD completo de agentes |
+| Mapa | /map | Mapa em tempo real com geofencing visual |
+| Check-ins | /check-ins | Listagem e registro manual |
+| Sincronização | /sync | Monitoramento dos schedulers |

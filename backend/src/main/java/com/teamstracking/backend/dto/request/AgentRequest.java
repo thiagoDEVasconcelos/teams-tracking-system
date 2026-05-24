@@ -16,6 +16,7 @@ public class AgentRequest {
         private String team;
         private String phone;
 
+        @NotBlank(message = "Email não pode estar vazio.")
         @Email(message = "Email inválido")
         private String email;
 }

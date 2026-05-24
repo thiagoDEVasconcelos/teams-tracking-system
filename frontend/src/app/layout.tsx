@@ -3,6 +3,9 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import Link from "next/dist/client/link";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Toaster } from "sonner";
+import { Providers } from "@/components/providers";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -32,14 +35,18 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
     >
       <body className="min-h-full flex flex-col">
-        <nav className="border-b bg-white px-6 py-4 flex gap-6 items-center">
-          <span className="font-bold text-lg">Teams Tracking</span>
-          <Link href="/agents" className="text-sm hover:underline">Agentes</Link>
-          <Link href="/map" className="text-sm hover:underline">Mapa</Link>
-          <Link href="/check-ins" className="text-sm hover:underline">Check-ins</Link>
-          <Link href="/sync" className="text-sm hover:underline">Sincronização</Link>
-        </nav>
-        {children}
+        <Providers>
+          <nav className="border-b bg-white px-6 py-4 flex gap-6 items-center">
+            <span className="font-bold text-lg">Teams Tracking</span>
+            <Link href="/agents" className="text-sm hover:underline">Agentes</Link>
+            <Link href="/map" className="text-sm hover:underline">Mapa</Link>
+            <Link href="/check-ins" className="text-sm hover:underline">Check-ins</Link>
+            <Link href="/sync" className="text-sm hover:underline">Sincronização</Link>
+          </nav>
+          <main className="p-6">{children}</main>
+          <Toaster />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </Providers>
       </body>
     </html>
   );

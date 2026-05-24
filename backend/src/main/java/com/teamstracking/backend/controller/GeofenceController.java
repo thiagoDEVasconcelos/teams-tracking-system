@@ -10,7 +10,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/geofences")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
 public class GeofenceController {
 
     private final GeofenceRepository geofenceRepository;

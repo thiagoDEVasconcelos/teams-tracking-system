@@ -11,7 +11,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/sync")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
 public class SyncController {
 
     private final SyncService syncService;

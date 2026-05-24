@@ -38,6 +38,7 @@ public class GpsApiClient {
         return mono
                 .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
                         .maxBackoff(Duration.ofSeconds(30))
+                        .jitter(0.5)
                         .filter(throwable -> {
                             if (throwable instanceof WebClientResponseException ex) {
 

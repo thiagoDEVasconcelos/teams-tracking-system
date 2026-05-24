@@ -19,7 +19,7 @@ public class CheckIn {
     private String externalEventId;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "agent_id", nullable = false)
+    @JoinColumn(name = "agent_id", nullable = false, foreignKey = @ForeignKey(name = "check_ins_ibfk_1"))
     private Agent agent;
 
     private String type;

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Agent } from "@/services/agents";
 import { Battery, MapPin, Wifi } from "lucide-react";
+import { useGeofences } from "@/hooks/useGeofences";
 
 const AgentMap = dynamic(
   () => import("@/components/map/AgentMap").then(m => m.AgentMap),
@@ -20,6 +21,7 @@ export default function MapPage() {
   const { data: agents, isLoading } = useAgents();
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const { data: geofences } = useGeofences();
 
   const { data: route } = useAgentRoute(
     selectedAgent?.id ?? 0,
@@ -143,6 +145,7 @@ export default function MapPage() {
           selectedAgent={selectedAgent}
           onSelectAgent={setSelectedAgent}
           routePoints={route ?? []}
+          geofences={geofences ?? []}
         />
       </div>
     </div>

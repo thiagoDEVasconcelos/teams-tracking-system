@@ -30,11 +30,16 @@ function parseCoordinates(coordinates: string, type: string) {
     const parsed = JSON.parse(coordinates);
 
     if (type === "CIRCLE") {
-      return { center: parsed.center, radius: parsed.radius };
+      return {
+        center: [parsed.center[1], parsed.center[0]] as [number, number],
+        radius: parsed.radius
+      };
     }
 
     if (type === "POLYGON") {
-      return { positions: parsed };
+      return {
+        positions: parsed.map((coord: number[]) => [coord[1], coord[0]] as [number, number])
+      };
     }
   } catch {
     return null;

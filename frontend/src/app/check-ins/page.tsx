@@ -89,6 +89,7 @@ const {
               <TableHead>Origem</TableHead>
               <TableHead>Endereço</TableHead>
               <TableHead>Data</TableHead>
+              <TableHead>Distância</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -99,6 +100,11 @@ const {
                 <TableCell>{c.source}</TableCell>
                 <TableCell>{c.address ?? "—"}</TableCell>
                 <TableCell>{new Date(c.occurredAt).toLocaleString("pt-BR")}</TableCell>
+                <TableCell>
+                  {c.distanceFromPrevious
+                    ? `${Math.round(c.distanceFromPrevious)}m`
+                    : "—"}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

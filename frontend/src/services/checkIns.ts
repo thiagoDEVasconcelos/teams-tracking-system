@@ -11,6 +11,7 @@ export interface CheckIn {
   longitude: number;
   address: string;
   notes: string;
+  distanceFromPrevious: number | null;
   occurredAt: string;
 }
 

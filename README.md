@@ -176,7 +176,6 @@ Documentação completa: `http://localhost:8080/swagger-ui/index.html`
 
 | Tela | Rota | Descrição |
 |---|---|---|
-| Dashboard | / | Resumo geral com cards de status |
 | Agentes | /agents | CRUD completo de agentes |
 | Mapa | /map | Mapa em tempo real com geofencing visual |
 | Check-ins | /check-ins | Listagem e registro manual |

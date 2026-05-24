@@ -1,5 +1,6 @@
 package com.teamstracking.backend.dto.external;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,8 +10,8 @@ public class ExternalGeofenceDto {
     private String id;
     private String name;
     private String type;
-    private Object coordinates;
+    private String coordinatesJson;
     private Boolean alertOnEnter;
     private Boolean alertOnExit;
-    private Object teams;
+    private String assignedTeams;
 }

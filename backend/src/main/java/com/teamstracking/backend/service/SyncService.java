@@ -153,6 +153,8 @@ public class SyncService {
                 geofence.setType(dto.getType());
                 geofence.setAlertOnEnter(dto.getAlertOnEnter());
                 geofence.setAlertOnExit(dto.getAlertOnExit());
+                geofence.setCoordinates(dto.getCoordinatesJson());
+                geofence.setTeams(dto.getAssignedTeams());
                 geofence.setUpdatedAt(LocalDateTime.now());
                 if (geofence.getId() == null) geofence.setCreatedAt(LocalDateTime.now());
                 geofenceRepository.save(geofence);

@@ -139,7 +139,9 @@ export default function SyncPage() {
                 <TableBody>
                   {paginated.map(log => (
                     <TableRow key={log.id}>
-                      <TableCell className="font-medium">{log.schedulerName}</TableCell>
+                      <TableCell className="font-medium">
+                        {SCHEDULERS_LABELS[log.schedulerName] ?? log.schedulerName}
+                      </TableCell>
                       <TableCell>
                         <Badge variant={log.status === "SUCCESS" ? "default" : "destructive"}>
                           {log.status}

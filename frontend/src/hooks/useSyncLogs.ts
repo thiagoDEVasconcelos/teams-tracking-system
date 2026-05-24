@@ -46,3 +46,28 @@ export function useSyncLocations() {
     },
   });
 }
+
+export function useSyncCheckIns() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: syncService.syncCheckIns,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["check-ins"] });
+      queryClient.invalidateQueries({ queryKey: ["sync-logs"] });
+      toast.success(`Check-ins sincronizados: ${data.synced}`);
+    },
+    onError: () => toast.error("Erro ao sincronizar check-ins"),
+  });
+}
+
+export function useSyncGeofences() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: syncService.syncGeofences,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["sync-logs"] });
+      toast.success(`Geofences sincronizadas: ${data.synced}`);
+    },
+    onError: () => toast.error("Erro ao sincronizar geofences"),
+  });
+}

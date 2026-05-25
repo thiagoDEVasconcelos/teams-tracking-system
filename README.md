@@ -141,11 +141,12 @@ sudo docker compose up --build
 1. Banco de dados
 Crie o schema e o usuário no seu MySQL local:
 
-SQL
+```sql
 CREATE DATABASE teams_tracking;
 CREATE USER 'tracker'@'localhost' IDENTIFIED BY 'tracker123';
 GRANT ALL PRIVILEGES ON teams_tracking.* TO 'tracker'@'localhost';
 FLUSH PRIVILEGES;
+```
 
 2. Backend
 Bash

@@ -3,7 +3,6 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import Link from "next/dist/client/link";
-import { Toaster } from "sonner";
 import { Providers } from "@/components/providers";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
@@ -43,7 +42,6 @@ export default function RootLayout({
             <Link href="/sync" className="text-sm hover:underline">Sincronização</Link>
           </nav>
           <main className="p-6">{children}</main>
-          <Toaster />
         </Providers>
       </body>
     </html>

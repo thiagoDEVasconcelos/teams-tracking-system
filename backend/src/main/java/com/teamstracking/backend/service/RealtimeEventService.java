@@ -47,7 +47,7 @@ public class RealtimeEventService {
                     )));
         } catch (IOException | IllegalStateException e) {
             emitters.remove(emitter);
-            log.debug("Removed closed realtime SSE emitter: {}", e.getMessage());
+            log.debug("Conexão SSE em tempo real encerrada foi removida.", e.getMessage());
         }
     }
 }

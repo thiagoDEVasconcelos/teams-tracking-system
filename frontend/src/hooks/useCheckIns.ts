@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { checkInsService, CheckInRequest } from "@/services/checkIns";
+import { checkInsService } from "@/services/checkIns";
 import { toast } from "sonner";
+import { CheckInRequest } from "@/types/checkin";
 
 export function useCheckIns() {
   return useQuery({

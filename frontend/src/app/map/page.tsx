@@ -28,7 +28,9 @@ export default function MapPage() {
     date
   );
 
-  if (isLoading) return <p>Carregando agentes...</p>;
+  if (isLoading) {
+    return <p>Carregando agentes...</p>;
+  };
 
   return (
     <div className="flex gap-4 h-[calc(100vh-120px)]">

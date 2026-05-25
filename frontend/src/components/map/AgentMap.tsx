@@ -100,10 +100,14 @@ export function AgentMap({ agents, selectedAgent, onSelectAgent, routePoints, ge
       )}
 
       {geofences.map(geofence => {
-        if (!geofence.coordinates) return null;
+        if (!geofence.coordinates) {
+          return null
+        };
+        
         const parsed = parseCoordinates(geofence.coordinates, geofence.type);
-        if (!parsed) return null;
-
+        if (!parsed) {
+          return null;
+        }
         if (geofence.type === "CIRCLE" && parsed.center && parsed.radius) {
           return (
             <Circle

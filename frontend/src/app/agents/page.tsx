@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Agent } from "@/services/agents";
 import { Pencil, Trash2, Plus } from "lucide-react";
+import { Agent } from "@/types/agent";
 
 export default function AgentsPage() {
   const { data: agents, isLoading } = useAgents();
@@ -26,7 +26,9 @@ export default function AgentsPage() {
     setOpen(true);
   }
 
-  if (isLoading) return <p>Carregando agentes...</p>;
+  if (isLoading) {
+    return <p>Carregando agentes...</p>;
+  }
 
   return (
     <div>

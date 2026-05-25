@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateAgent, useUpdateAgent } from "@/hooks/useAgents";
-import { Agent } from "@/services/agents";
+import { Agent } from "@/types/agent";
 
 const schema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),

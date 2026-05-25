@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Agent } from "@/services/agents";
 import { Battery, MapPin, Wifi } from "lucide-react";
 import { useGeofences } from "@/hooks/useGeofences";
 
@@ -19,9 +18,10 @@ const AgentMap = dynamic(
 
 export default function MapPage() {
   const { data: agents, isLoading } = useAgents();
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const { data: geofences } = useGeofences();
+  const selectedAgent = agents?.find(agent => agent.id === selectedAgentId) ?? null;
 
   const { data: route } = useAgentRoute(
     selectedAgent?.id ?? 0,
@@ -43,7 +43,7 @@ export default function MapPage() {
             {agents?.map(agent => (
               <button
                 key={agent.id}
-                onClick={() => setSelectedAgent(agent)}
+                onClick={() => setSelectedAgentId(agent.id)}
                 className={`w-full text-left p-3 rounded-lg border transition-colors hover:bg-muted ${
                   selectedAgent?.id === agent.id ? "border-primary bg-muted" : "border-border"
                 }`}
@@ -143,7 +143,7 @@ export default function MapPage() {
         <AgentMap
           agents={agents ?? []}
           selectedAgent={selectedAgent}
-          onSelectAgent={setSelectedAgent}
+          onSelectAgent={agent => setSelectedAgentId(agent.id)}
           routePoints={route ?? []}
           geofences={geofences ?? []}
         />

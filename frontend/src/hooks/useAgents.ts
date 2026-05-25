@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { agentsService, AgentRequest } from "@/services/agents";
+import { agentsService } from "@/services/agents";
 import { toast } from "sonner";
+import { AgentRequest } from "@/types/agent";
 
 export function useAgents() {
   return useQuery({

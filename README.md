@@ -56,6 +56,8 @@ Sistema de rastreamento de equipes externas em tempo real, desenvolvido como des
 teams-tracking-system/
 ├── backend/          # Spring Boot API REST
 ├── frontend/         # Next.js App Router
+├── docs/             # Documentação de arquitetura e decisões técnicas
+├── docker-compose.yml
 └── README.md         # Documentação principal do projeto
 ```
 
@@ -163,6 +165,8 @@ docker compose up --build
 sudo docker compose up --build
 ```
 
+> **Atenção:** A API externa pode demorar até 60 segundos para responder na primeira requisição (cold start). Os schedulers tratam esse comportamento automaticamente com retry e backoff exponencial. Se os agentes não aparecerem imediatamente, aguarde alguns instantes e os dados serão sincronizados.
+
 Serviços disponíveis:
 
 - Frontend: http://localhost:3000
@@ -206,6 +210,8 @@ npm run dev
 ```
 
 Frontend disponível em: http://localhost:3000
+
+> **Atenção:** A API externa pode demorar até 60 segundos para responder na primeira requisição (cold start). Os schedulers tratam esse comportamento automaticamente com retry e backoff exponencial. Se os agentes não aparecerem imediatamente, aguarde alguns instantes e os dados serão sincronizados.
 
 ---
 

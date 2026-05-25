@@ -2,13 +2,18 @@
 
 import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Polygon, Circle, useMap } from "react-leaflet";
-import { Agent } from "@/services/agents";
-import { RoutePoint } from "@/services/locations";
-import { Geofence } from "@/services/geofences";
+
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { Agent } from "@/types/agent";
+import { RoutePoint } from "@/types/location";
+import { Geofence } from "@/types/geofence";
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+type LeafletDefaultIconPrototype = L.Icon.Default & {
+  _getIconUrl?: unknown;
+};
+
+delete (L.Icon.Default.prototype as LeafletDefaultIconPrototype)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",

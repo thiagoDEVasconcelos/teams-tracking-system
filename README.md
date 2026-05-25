@@ -115,14 +115,15 @@ Cálculo de distância em metros entre check-ins consecutivos do mesmo agente, i
 
 ---
 
-## Como Rodar A Aplicação
+## ## Como Rodar A Aplicação
 
+Markdown
 Opção 1: Via Docker Compose (Recomendado)
 A aplicação está totalmente dockerizada. Certifique-se de ter o Docker instalado e execute:
 
 Clone o repositório e entre na pasta do projeto:
 
-Bash
+```bash
 cd teams-tracking-system
 Suba todos os serviços (Banco, Backend e Frontend) de forma integrada:
 
@@ -132,39 +133,33 @@ docker compose up --build
 
 # Se precisar de permissões de administrador:
 sudo docker compose up --build
-
 Opção 2: Inicialização Manual (Local)
-### 1. Banco de dados
-   Crie o schema e o usuário no seu MySQL local:
 
-```sql
+1. Banco de dados
+Crie o schema e o usuário no seu MySQL local:
+
+SQL
 CREATE DATABASE teams_tracking;
 CREATE USER 'tracker'@'localhost' IDENTIFIED BY 'tracker123';
 GRANT ALL PRIVILEGES ON teams_tracking.* TO 'tracker'@'localhost';
 FLUSH PRIVILEGES;
-```
 
-### 2. Backend
-
-```bash
+2. Backend
+Bash
 cd backend
 mvn spring-boot:run
-```
-
 O Flyway criará as tabelas automaticamente na primeira execução.
 
-Backend disponível em: `http://localhost:8080`
-Swagger disponível em: `http://localhost:8080/swagger-ui/index.html`
+Backend disponível em: http://localhost:8080
 
-### 3. Frontend
+Swagger disponível em: http://localhost:8080/swagger-ui/index.html
 
-```bash
+3. Frontend
+Bash
 cd frontend
 npm install
 npm run dev
-```
-
-Frontend disponível em: `http://localhost:3000`
+Frontend disponível em: http://localhost:3000
 
 ---
 

@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class AgentService {
 
     private final AgentRepository agentRepository;
+    private final RealtimeEventService realtimeEventService;
 
     public List<AgentResponse> findAll() {
         return agentRepository.findAll()
@@ -43,7 +44,9 @@ public class AgentService {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
-        return toResponse(agentRepository.save(agent));
+        AgentResponse response = toResponse(agentRepository.save(agent));
+        realtimeEventService.publish("agent.created", "agents");
+        return response;
     }
 
     public AgentResponse update(Long id, AgentRequest request) {
@@ -55,13 +58,16 @@ public class AgentService {
         agent.setPhone(request.getPhone());
         agent.setEmail(request.getEmail());
         agent.setUpdatedAt(LocalDateTime.now());
-        return toResponse(agentRepository.save(agent));
+        AgentResponse response = toResponse(agentRepository.save(agent));
+        realtimeEventService.publish("agent.updated", "agents");
+        return response;
     }
 
     public void delete(Long id) {
         Agent agent = agentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Agente não encontrado: " + id));
         agentRepository.delete(agent);
+        realtimeEventService.publish("agent.deleted", "agents");
     }
 
     private AgentResponse toResponse(Agent agent) {

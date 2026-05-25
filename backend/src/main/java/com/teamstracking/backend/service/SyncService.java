@@ -20,6 +20,7 @@ public class SyncService {
     private final CheckInRepository checkInRepository;
     private final GeofenceRepository geofenceRepository;
     private final SyncLogRepository syncLogRepository;
+    private final RealtimeEventService realtimeEventService;
 
     private static final double MAX_ACCURACY_METERS = 50.0;
 
@@ -50,6 +51,7 @@ public class SyncService {
             log.error("Erro ao sincronizar agentes: {}", e.getMessage());
         }
         saveSyncLog("AGENT_SYNC", count, errorMessage, null);
+        if (count > 0) realtimeEventService.publish("agents.synced", "agents");
         return count;
     }
 
@@ -92,6 +94,10 @@ public class SyncService {
             log.error("Erro ao sincronizar localizações: {}", e.getMessage());
         }
         saveSyncLog("LOCATION_SYNC", count, errorMessage, null);
+        if (count > 0) {
+            realtimeEventService.publish("locations.synced", "locations");
+            realtimeEventService.publish("agents.locations.updated", "agents");
+        }
         return count;
     }
 
@@ -137,6 +143,7 @@ public class SyncService {
             log.error("Erro ao sincronizar check-ins: {}", e.getMessage());
         }
         saveSyncLog("CHECKIN_SYNC", count, errorMessage, newSyncToken);
+        if (count > 0) realtimeEventService.publish("check-ins.synced", "check-ins");
         return count;
     }
 
@@ -165,6 +172,7 @@ public class SyncService {
             log.error("Erro ao sincronizar geofences: {}", e.getMessage());
         }
         saveSyncLog("GEOFENCE_SYNC", count, errorMessage, null);
+        if (count > 0) realtimeEventService.publish("geofences.synced", "geofences");
         return count;
     }
 
@@ -177,5 +185,6 @@ public class SyncService {
                 .syncToken(syncToken)
                 .executedAt(LocalDateTime.now())
                 .build());
+        realtimeEventService.publish("sync-log.created", "sync-logs");
     }
 }

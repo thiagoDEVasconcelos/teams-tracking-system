@@ -18,6 +18,7 @@ public class CheckInService {
 
     private final CheckInRepository checkInRepository;
     private final AgentRepository agentRepository;
+    private final RealtimeEventService realtimeEventService;
 
     public CheckIn createManual(CheckInRequest request) {
         Agent agent = agentRepository.findById(request.getAgentId())
@@ -41,7 +42,7 @@ public class CheckInService {
             );
         }
 
-        return checkInRepository.save(CheckIn.builder()
+        CheckIn checkIn = checkInRepository.save(CheckIn.builder()
                 .agent(agent)
                 .type("CHECKIN")
                 .source("MANUAL")
@@ -53,6 +54,8 @@ public class CheckInService {
                 .occurredAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .build());
+        realtimeEventService.publish("check-in.created", "check-ins");
+        return checkIn;
     }
 
     public List<CheckIn> findByAgent(Long agentId) {

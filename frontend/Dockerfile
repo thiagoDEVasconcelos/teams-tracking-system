@@ -12,6 +12,5 @@ WORKDIR /app
 ENV NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
-COPY --from=build /app/public ./public
 EXPOSE 3000
 ENTRYPOINT ["node", "server.js"]

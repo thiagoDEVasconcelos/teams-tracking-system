@@ -19,7 +19,7 @@ export function useSyncAgents() {
       queryClient.invalidateQueries({ queryKey: ["agents"] });
       queryClient.invalidateQueries({ queryKey: ["sync-logs"] });
 
-      toast.success(`Sincronização concluída: ${data.synced} agentes`);
+      toast.success(`${data.synced} agentes atualizados`);
     },
 
     onError: () => {
@@ -37,7 +37,7 @@ export function useSyncLocations() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["agents"] });
 
-      toast.success(`Localizações sincronizadas: ${data.synced}`);
+      toast.success(`${data.synced} localizações atualizadas`);
     },
 
     onError: () => {
@@ -53,7 +53,9 @@ export function useSyncCheckIns() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["check-ins"] });
       queryClient.invalidateQueries({ queryKey: ["sync-logs"] });
-      toast.success(`Check-ins sincronizados: ${data.synced}`);
+      data.synced > 0 
+        ? toast.success(`${data.synced} novos check-ins sincronizados`)
+        : toast.info(`Nenhum check-in novo desde a última sincronização`);
     },
     onError: () => toast.error("Erro ao sincronizar check-ins"),
   });
@@ -65,7 +67,7 @@ export function useSyncGeofences() {
     mutationFn: syncService.syncGeofences,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["sync-logs"] });
-      toast.success(`Geofences sincronizadas: ${data.synced}`);
+      toast.success(`${data.synced} geofences atualizadas`);
     },
     onError: () => toast.error("Erro ao sincronizar geofences"),
   });

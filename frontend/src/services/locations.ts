@@ -1,15 +1,17 @@
 import { api } from "@/services/api";
+import type { RoutePoint } from "@/types/location";
 
-export interface RoutePoint {
-  id: number;
-  latitude: number;
-  longitude: number;
-  accuracy: number;
-  speed: number;
-  recordedAt: string;
+async function getAgentRoute(
+  agentId: number,
+  date: string
+): Promise<RoutePoint[]> {
+  const response = await api.get<RoutePoint[]>(
+    `/api/locations/agent/${agentId}/route?date=${date}`
+  );
+
+  return response.data;
 }
 
 export const locationsService = {
-  getAgentRoute: (agentId: number, date: string) =>
-    api.get<RoutePoint[]>(`/api/locations/agent/${agentId}/route?date=${date}`).then(r => r.data),
+  getAgentRoute,
 };

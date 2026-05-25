@@ -1,16 +1,11 @@
 import { api } from "@/services/api";
+import type { Geofence } from "@/types/geofence";
 
-export interface Geofence {
-  id: number;
-  externalId: string;
-  name: string;
-  type: string;
-  coordinates: string;
-  alertOnEnter: boolean;
-  alertOnExit: boolean;
-  teams: string;
+async function findAll(): Promise<Geofence[]> {
+  const response = await api.get<Geofence[]>("/api/geofences");
+  return response.data;
 }
 
 export const geofencesService = {
-  findAll: () => api.get<Geofence[]>("/api/geofences").then(r => r.data),
+  findAll,
 };

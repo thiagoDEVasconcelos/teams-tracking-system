@@ -1,28 +1,35 @@
 import { api } from "@/services/api";
+import type {
+  CheckIn,
+  CheckInRequest,
+} from "@/types/checkin";
 
-export interface CheckIn {
-  id: number;
-  agent: { id: number; name: string };
-  type: string;
-  source: string;
-  latitude: number;
-  longitude: number;
-  address: string;
-  notes: string;
-  distanceFromPrevious: number | null;
-  occurredAt: string;
+async function findAll(): Promise<CheckIn[]> {
+  const response = await api.get<CheckIn[]>("/api/check-ins");
+  return response.data;
 }
 
-export interface CheckInRequest {
-  agentId: number;
-  latitude: number;
-  longitude: number;
-  notes?: string;
-  address?: string;
+async function findByAgent(agentId: number): Promise<CheckIn[]> {
+  const response = await api.get<CheckIn[]>(
+    `/api/check-ins/agent/${agentId}`
+  );
+
+  return response.data;
+}
+
+async function create(
+  data: CheckInRequest
+): Promise<CheckIn> {
+  const response = await api.post<CheckIn>(
+    "/api/check-ins",
+    data
+  );
+
+  return response.data;
 }
 
 export const checkInsService = {
-  findAll: () => api.get<CheckIn[]>("/api/check-ins").then(r => r.data),
-  findByAgent: (agentId: number) => api.get<CheckIn[]>(`/api/check-ins/agent/${agentId}`).then(r => r.data),
-  create: (data: CheckInRequest) => api.post<CheckIn>("/api/check-ins", data).then(r => r.data),
+  findAll,
+  findByAgent,
+  create,
 };

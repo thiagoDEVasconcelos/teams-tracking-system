@@ -189,6 +189,9 @@ FLUSH PRIVILEGES;
 ```
 
 2. Backend
+```md
+> ⚠️ Certifique-se de que o MySQL esteja rodando antes de iniciar o backend.
+
 
 ```bash
 cd backend

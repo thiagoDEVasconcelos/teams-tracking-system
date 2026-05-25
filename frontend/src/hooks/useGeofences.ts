@@ -5,6 +5,5 @@ export function useGeofences() {
   return useQuery({
     queryKey: ["geofences"],
     queryFn: geofencesService.findAll,
-    refetchInterval: 60000,
   });
 }

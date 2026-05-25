@@ -6,7 +6,6 @@ export function useAgents() {
   return useQuery({
     queryKey: ["agents"],
     queryFn: agentsService.findAll,
-    refetchInterval: 30000,
   });
 }
 

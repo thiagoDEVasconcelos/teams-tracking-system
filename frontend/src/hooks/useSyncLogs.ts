@@ -6,7 +6,6 @@ export function useSyncLogs() {
   return useQuery({
     queryKey: ["sync-logs"],
     queryFn: syncService.getLogs,
-    refetchInterval: 15000,
   });
 }
 

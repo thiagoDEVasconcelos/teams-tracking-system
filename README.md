@@ -188,8 +188,7 @@ GRANT ALL PRIVILEGES ON teams_tracking.* TO 'tracker'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-2. Backend
-```md
+2. Backend 
 > ⚠️ Certifique-se de que o MySQL esteja rodando antes de iniciar o backend.
 
 

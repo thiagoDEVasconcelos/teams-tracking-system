@@ -54,6 +54,7 @@ teams-tracking-system/
 ├── frontend/         # Next.js App Router
 ├── docs/             # Documentação adicional
 └── README.md         # Documentação principal do projeto
+```
 
 ### Fluxo de sincronização
 
@@ -117,23 +118,25 @@ Cálculo de distância em metros entre check-ins consecutivos do mesmo agente, i
 
 ## ## Como Rodar A Aplicação
 
-Markdown
-Opção 1: Via Docker Compose (Recomendado)
+### Opção 1: Via Docker Compose (Recomendado)
 A aplicação está totalmente dockerizada. Certifique-se de ter o Docker instalado e execute:
 
 Clone o repositório e entre na pasta do projeto:
 
 ```bash
 cd teams-tracking-system
+```
+
 Suba todos os serviços (Banco, Backend e Frontend) de forma integrada:
 
-Bash
+```bash
 # Se seu usuário estiver no grupo do docker:
 docker compose up --build
 
 # Se precisar de permissões de administrador:
 sudo docker compose up --build
-Opção 2: Inicialização Manual (Local)
+```
+### Opção 2: Inicialização Manual (Local)
 
 1. Banco de dados
 Crie o schema e o usuário no seu MySQL local:

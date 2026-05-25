@@ -1,15 +1,16 @@
 package com.teamstracking.backend.client;
 
 import com.teamstracking.backend.dto.external.*;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import reactor.util.retry.Retry;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -28,8 +29,7 @@ public class GpsApiClient {
                 .baseUrl(baseUrl)
                 .defaultHeader("x-api-key", apiKey)
                 .clientConnector(new ReactorClientHttpConnector(
-                        HttpClient.create()
-                                .responseTimeout(Duration.ofSeconds(60))
+                        HttpClient.create().responseTimeout(Duration.ofSeconds(60))
                 ))
                 .build();
     }
@@ -41,12 +41,10 @@ public class GpsApiClient {
                         .jitter(0.5)
                         .filter(throwable -> {
                             if (throwable instanceof WebClientResponseException ex) {
-
                                 if (ex.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) {
                                     log.warn("API externa retornou 503, aplicando backoff...");
                                     return true;
                                 }
-
                                 if (ex.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
                                     String retryAfter = ex.getHeaders().getFirst("Retry-After");
                                     long waitSeconds = retryAfter != null ? Long.parseLong(retryAfter) : 10;
@@ -60,6 +58,7 @@ public class GpsApiClient {
                 );
     }
 
+    @CircuitBreaker(name = "gpsApi", fallbackMethod = "fetchAgentsFallback")
     public List<ExternalAgentDto> fetchAgents() {
         List<ExternalAgentDto> allAgents = new ArrayList<>();
         int page = 1;
@@ -102,6 +101,12 @@ public class GpsApiClient {
         return allAgents;
     }
 
+    public List<ExternalAgentDto> fetchAgentsFallback(Exception e) {
+        log.warn("Circuit Breaker ativo para fetchAgents: {}", e.getMessage());
+        return Collections.emptyList();
+    }
+
+    @CircuitBreaker(name = "gpsApi", fallbackMethod = "fetchLocationsFallback")
     public List<ExternalLocationDto> fetchLocations() {
         try {
             ExternalLocationResponse response = withResilience(
@@ -125,6 +130,12 @@ public class GpsApiClient {
         }
     }
 
+    public List<ExternalLocationDto> fetchLocationsFallback(Exception e) {
+        log.warn("Circuit Breaker ativo para fetchLocations: {}", e.getMessage());
+        return Collections.emptyList();
+    }
+
+    @CircuitBreaker(name = "gpsApi", fallbackMethod = "fetchCheckInsFallback")
     public ExternalCheckInResponse fetchCheckIns(String syncToken) {
         try {
             return withResilience(
@@ -149,6 +160,12 @@ public class GpsApiClient {
         }
     }
 
+    public ExternalCheckInResponse fetchCheckInsFallback(Exception e) {
+        log.warn("Circuit Breaker ativo para fetchCheckIns: {}", e.getMessage());
+        return new ExternalCheckInResponse();
+    }
+
+    @CircuitBreaker(name = "gpsApi", fallbackMethod = "fetchGeofencesFallback")
     public List<ExternalGeofenceDto> fetchGeofences() {
         try {
             ExternalGeofenceResponse response = withResilience(
@@ -170,5 +187,10 @@ public class GpsApiClient {
             log.error("Erro inesperado ao buscar geofences: {}", e.getMessage());
             return Collections.emptyList();
         }
+    }
+
+    public List<ExternalGeofenceDto> fetchGeofencesFallback(Exception e) {
+        log.warn("Circuit Breaker ativo para fetchGeofences: {}", e.getMessage());
+        return Collections.emptyList();
     }
 }

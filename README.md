@@ -11,6 +11,7 @@ Sistema de rastreamento de equipes externas em tempo real, desenvolvido como des
 - Spring Boot 3.3.5
 - Spring Data JPA
 - Spring WebFlux (WebClient)
+- Resilience4j (CircuitBreaker)
 - MySQL 8
 - Flyway (migrations)
 - Springdoc OpenAPI (Swagger)
@@ -43,6 +44,9 @@ Sistema de rastreamento de equipes externas em tempo real, desenvolvido como des
 - Geofencing visual (polígonos e círculos no mapa)
 - Swagger/OpenAPI em `/swagger-ui/index.html`
 - Tratamento de erros 429 (Rate Limiting) e 503 (Instabilidade) com retry e backoff exponencial com jitter
+- CircuitBreaker com fallback para proteger chamadas à API externa
+- Atualizações em tempo real no frontend via Server-Sent Events (SSE)
+- Testes unitários para services e utilitários de domínio
 
 ---
 
@@ -52,7 +56,6 @@ Sistema de rastreamento de equipes externas em tempo real, desenvolvido como des
 teams-tracking-system/
 ├── backend/          # Spring Boot API REST
 ├── frontend/         # Next.js App Router
-├── docs/             # Documentação adicional
 └── README.md         # Documentação principal do projeto
 ```
 
@@ -68,7 +71,9 @@ SyncService (upsert + regras de negócio)
 ↓
 MySQL (persistência)
 ↓
-Frontend (TanStack Query com refetchInterval)
+Eventos SSE (/api/events)
+↓
+Frontend (TanStack Query invalidando caches em tempo real)
 
 ### Os 4 Schedulers
 
@@ -85,6 +90,12 @@ Frontend (TanStack Query com refetchInterval)
 
 ### WebClient em vez de RestTemplate
 O desafio exige WebClient. Utilizado WebClient com tratamento de erros 429 (rate limiting) lendo o header `Retry-After` e 503 (instabilidade simulada) com backoff exponencial e jitter de 50%, garantindo resiliência nas chamadas à API externa.
+
+### CircuitBreaker com Resilience4j
+As chamadas do `GpsApiClient` para agentes, localizações, check-ins e geofences usam `@CircuitBreaker(name = "gpsApi")` com fallbacks seguros. A configuração fica em `application.properties` e evita que instabilidades recorrentes da API externa derrubem o fluxo de sincronização.
+
+### Atualização em tempo real com SSE
+O backend expõe `/api/events` com Server-Sent Events. Quando agentes, localizações, check-ins, geofences ou logs de sincronização mudam, o frontend recebe o evento e invalida as queries correspondentes do TanStack Query.
 
 ### Flyway para migrations
 Todas as alterações no banco são versionadas via Flyway, garantindo rastreabilidade e reprodutibilidade do schema em qualquer ambiente.
@@ -104,7 +115,22 @@ Cálculo de distância em metros entre check-ins consecutivos do mesmo agente, i
 - `GpsApiClient` — comunicação com API externa
 - `SyncService` — orquestração da sincronização
 - `Schedulers` — agendamento, delegam para SyncService
+- `RealtimeEventService` — publicação de eventos SSE para o frontend
 - `Controllers` — exposição dos endpoints REST
+
+### Testes unitários
+O projeto possui testes com JUnit 5 e Mockito cobrindo regras de service e utilitários de domínio:
+
+- `AgentServiceTest` — listagem, criação, remoção e exceção para agente inexistente
+- `SyncServiceTest` — sincronização de agentes e comportamento quando não há dados externos
+- `HaversineUtilTest` — cálculo de distância, mesmo ponto e distância positiva
+
+Para executar:
+
+```bash
+cd backend
+./mvnw test
+```
 
 ---
 
@@ -116,7 +142,7 @@ Cálculo de distância em metros entre check-ins consecutivos do mesmo agente, i
 
 ---
 
-## ## Como Rodar A Aplicação
+## Como Rodar A Aplicação
 
 ### Opção 1: Via Docker Compose (Recomendado)
 A aplicação está totalmente dockerizada. Certifique-se de ter o Docker instalado e execute:
@@ -136,6 +162,16 @@ docker compose up --build
 # Se precisar de permissões de administrador:
 sudo docker compose up --build
 ```
+
+Serviços disponíveis:
+
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8080
+- Swagger: http://localhost:8080/swagger-ui/index.html
+- MySQL: localhost:3306
+
+O Compose já configura o banco, as credenciais e a URL pública da API usada pelo frontend (`NEXT_PUBLIC_API_BASE_URL=http://localhost:8080`).
+
 ### Opção 2: Inicialização Manual (Local)
 
 1. Banco de dados
@@ -149,9 +185,12 @@ FLUSH PRIVILEGES;
 ```
 
 2. Backend
-Bash
+
+```bash
 cd backend
 mvn spring-boot:run
+```
+
 O Flyway criará as tabelas automaticamente na primeira execução.
 
 Backend disponível em: http://localhost:8080
@@ -159,10 +198,13 @@ Backend disponível em: http://localhost:8080
 Swagger disponível em: http://localhost:8080/swagger-ui/index.html
 
 3. Frontend
-Bash
+
+```bash
 cd frontend
 npm install
 npm run dev
+```
+
 Frontend disponível em: http://localhost:3000
 
 ---
@@ -184,6 +226,7 @@ Frontend disponível em: http://localhost:3000
 | POST | /api/sync/check-ins | Sincroniza check-ins manualmente |
 | POST | /api/sync/geofences | Sincroniza geofences manualmente |
 | GET | /api/sync/logs | Histórico de sincronizações |
+| GET | /api/events | Stream SSE de eventos em tempo real |
 
 Documentação completa: `http://localhost:8080/swagger-ui/index.html`
 
